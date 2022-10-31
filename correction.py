@@ -1,10 +1,11 @@
-import reynir
-from reynir_correct import tokenize, check_single, check_errors
+from reynir_correct import tokenize, check_errors
 import re
 
-def correct_sentence(sent):
-    """ Takes an Icelandic sentence as input, returns it corrected. """
+LEN_BASE = 20
 
+
+# Takes an Icelandic sentence as input, returns it corrected.
+def correct_sentence(sent):
     err_str = check_errors(**{"input": sent, "annotations": True, "all_errors": True, "format": "text", "one_sent": True})
     corr_sent = ""
     annots = []
@@ -16,8 +17,9 @@ def correct_sentence(sent):
 
     return corr_sent, annots
 
+
+# Catches token-level errors such as spelling and bad phrases - does not correct grammatical errors.
 def correct_tokens(sent):
-    """ Catches token-level errors such as spelling and bad phrases - does not correct grammatical errors. """
     err_tokens = tokenize(sent)
     corr_tokens = []
     annot_obj = {}
@@ -32,27 +34,50 @@ def correct_tokens(sent):
     return corr_tok, annot_obj
 
 
-
-if __name__ == "__main__":
-
-    sent1 = "Páli, vini mínum, langaði að horfa á sjónnvarpið eftir útileiguna."
-    sent2 = "Af gefnu tilefni fékk daninn vilja sýnum framgengt í auknu mæli."
-    sent3 = "Hann hlóg af mér til hins ítrasta, eins og mannsals grýnið hafi verið harmlaust."
-    sent4 = "ég lýt á hann og spyr hann kvort ég meigi þetta."
-
-    # Token-level correction
-    corr_tok_sent1, err_tok_sent1 = correct_tokens(sent1)
-    corr_tok_sent2, err_tok_sent2 = correct_tokens(sent2)
-    corr_tok_sent3, err_tok_sent3 = correct_tokens(sent3)
-    corr_tok_sent4, err_tok_sent4 = correct_tokens(sent4)
-
-    # Full grammar correction
-    corr_sent1, annots_sent1 = correct_sentence(corr_tok_sent1)
-    corr_sent2, annots_sent2 = correct_sentence(corr_tok_sent2)
-    corr_sent3, annots_sent3 = correct_sentence(corr_tok_sent3)
-    corr_sent4, annots_sent4 = correct_sentence(corr_tok_sent4)
-
-    # obj = correct_sentence(sent2)
-    # print(obj)
+def build_feedback_line(w1, text):
+    line = ''
+    line += w1
+    line += ' ' * (LEN_BASE - len(w1))
+    line += text
+    return line
 
 
+def build_feedback(tok_err_dict, correct_sent):
+    feedback = ''
+    if len(tok_err_dict) == 0:
+        feedback += '\n-----> All tokens correct.\n'
+    else:
+        feedback += '\n-----> Token correction:\n'
+        for key in tok_err_dict.keys():
+            feedback += build_feedback_line(key, tok_err_dict[key])
+            feedback += '\n'
+    
+    feedback += f'-----> Correct sentence:\n       {correct_sent}\n'
+    # feedback += '\n'
+    # if len(sent_err_list) == 0:
+    #     feedback += 'Sentence correct.\n'
+    # else:
+    #     feedback += 'Sentence level correction:\n'
+        # for value in sent_err_list:
+        #     feedback += value
+        #     feedback += '\n'
+
+    return feedback
+
+
+def feedback(sentence, tr):
+    _, err_tok = correct_tokens(sentence)
+    corr_sent, _ = correct_sentence(sentence)
+
+    corr_tok_dict = {}
+    for key in err_tok:
+        if err_tok[key] != '':
+            feedback = tr.translate(tr.ICELANDIC, tr.ENGLISH, err_tok[key])
+            corr_tok_dict[key] = feedback
+
+    # corr_sent_list = []
+    # for value in err_sent:
+    #     feedback = tr.translate(tr.ICELANDIC, tr.ENGLISH, value)
+    #     corr_sent_list.append(feedback)
+
+    return build_feedback(corr_tok_dict, corr_sent)

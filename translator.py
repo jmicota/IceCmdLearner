@@ -26,12 +26,12 @@ class Translator():
     def translate(self, from_lang, to_lang, sentence):
         # Ensure input type
         if not isinstance(sentence, str):
-            sys.exit('Translator: Given sentence is not a string.')
+            sys.exit('Translator: Given sentence is not a string.\n')
 
         # Ensure existing support for chosen languages
         if from_lang not in self.models or from_lang not in self.tokenizers or \
            to_lang not in self.models[from_lang] or to_lang not in self.tokenizers[from_lang]:
-           sys.exit(f'Translator: translation {from_lang} to {to_lang} unsupported.')
+           sys.exit(f'Translator: translation {from_lang} to {to_lang} unsupported.\n')
 
         # Extract correct tokenizer and model
         tokenizer = self.tokenizers[from_lang][to_lang]
@@ -41,5 +41,8 @@ class Translator():
         input_ids = tokenizer(sentence, return_tensors='pt').input_ids
         outputs = model.generate(input_ids=input_ids, num_beams=5, num_return_sequences=3, max_new_tokens=512)
 
-        # Return array of translation options
-        return tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        # Return best translation option
+        outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        if len(outputs) == 0:
+            return ''
+        return outputs[0]

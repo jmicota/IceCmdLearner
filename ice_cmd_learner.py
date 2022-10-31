@@ -1,12 +1,31 @@
 from curses import keyname
 import translator
+import correction
+import lemmatization
 import warnings
 warnings.filterwarnings('ignore')
 
 
-def pipeline(sentence, lang, target_lang, translator=None, corrector=None):
-    translated = tr.translate(lang, target_lang, sentence)
-    return translated
+def pipeline_en_is(sentence, tr):
+    translated = tr.translate(tr.ENGLISH, tr.ICELANDIC, sentence)
+    corrected, _ = correction.correct_sentence(translated)
+    print('-----> ' + corrected)
+    return lemmatization.generate_analysis(corrected, tr)
+
+
+def pipeline_is_en(sentence, tr):
+    translated = tr.translate(tr.ICELANDIC, tr.ENGLISH, sentence)
+    print('-----> ' + translated)
+    return correction.feedback(sentence, tr)
+
+
+def pipeline(sentence, lang, tr):
+    result = ''
+    if lang == tr.ENGLISH:
+        result = pipeline_en_is(sentence, tr)
+    else:
+        result = pipeline_is_en(sentence, tr)
+    return result
 
 
 if __name__ == '__main__':
@@ -23,16 +42,16 @@ if __name__ == '__main__':
             language = ''
             while language not in tr.available_languages:
                 if language != '':
-                    print('Language code not supported')
+                    print('-----> Language code not supported\n')
                 language = input(f'Choose language of input ({tr.ENGLISH}/{tr.ICELANDIC}): ')
         
-            print(f'Input language set to: {language}')
+            print(f'-----> Input language set to: {language}\n')
             target_language = tr.ICELANDIC if language == tr.ENGLISH else tr.ENGLISH
 
-            input_sentence = input('Input: ')
+            input_sentence = input(f'({language}) Input: ')
             while not input_sentence == '':
-                translated = pipeline(input_sentence, language, target_language)
-                print(translated)
-                input_sentence = input('Input: ')
+                output = pipeline(input_sentence, language, tr)
+                print(output)
+                input_sentence = input(f'({language}) Input: ')
     except KeyboardInterrupt:
         print('\n\n----- Goodbye!')
