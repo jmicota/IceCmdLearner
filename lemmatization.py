@@ -7,8 +7,7 @@ LEN_BASE = 20
 
 
 def build_line(w1, w2, w3):
-    line = ''
-    line += w1
+    line = w1
     line += ' ' * (LEN_BASE - len(w1))
     line += w2
     line += ' ' * (LEN_BASE - len(w2))
@@ -39,11 +38,13 @@ def generate_analysis(sentence, tr):
         for lemma in lemmas:
             tr_lemmas.append(tr.translate(tr.ICELANDIC, tr.ENGLISH, lemma))
 
-        # Return ERROR for definitely incorrect token translations
-        for i in range(len(tr_lemmas)):
-            if len(tr_lemmas[i].split(' ')) > 1:
-                tr_lemmas[i] = 'ERROR'
+        # # Return ERROR for definitely incorrect token translations
+        # for i in range(len(tr_lemmas)):
+        #     if len(tr_lemmas[i].split(' ')) > 1:
+        #         tr_lemmas[i] = 'ERROR'
         
+        analysis = '\n' + build_line('TOKEN', 'LEMMA', 'TRANSLATION') + '\n' + \
+                   '-' * LEN_BASE * 3 + '\n'
         for i in range(len(tokens)):
             analysis += build_line(tokens[i], lemmas[i], tr_lemmas[i])
             analysis += '\n'

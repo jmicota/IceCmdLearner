@@ -47,12 +47,12 @@ def build_feedback(tok_err_dict, correct_sent):
     if len(tok_err_dict) == 0:
         feedback += '\n-----> All tokens correct.\n'
     else:
-        feedback += '\n-----> Token correction:\n'
+        feedback += '\nToken correction:\n' + 60 * '-' + '\n'
         for key in tok_err_dict.keys():
             feedback += build_feedback_line(key, tok_err_dict[key])
             feedback += '\n'
     
-    feedback += f'-----> Correct sentence:\n       {correct_sent}\n'
+    feedback += f'\nCorrect sentence:\n' + 60 * '-' + f'\n{correct_sent}\n'
     # feedback += '\n'
     # if len(sent_err_list) == 0:
     #     feedback += 'Sentence correct.\n'

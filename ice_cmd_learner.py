@@ -1,5 +1,5 @@
-from curses import keyname
-import translator
+import translator_helsinki
+import translator_openai
 import correction
 import lemmatization
 import warnings
@@ -30,7 +30,8 @@ def pipeline(sentence, lang, tr):
 
 if __name__ == '__main__':
     print('\n----- Setting up your personal AI teacher..')
-    tr = translator.Translator()
+    tr_helsinki = translator_helsinki.Translator()
+    tr_openai = translator_openai.Translator()
     print('----- Teacher has arrived.')
 
     print('\n----- ICE CMD LEARNER READY')
@@ -38,6 +39,12 @@ if __name__ == '__main__':
     print('----- Input empty sentence to switch languages.\n')
 
     try:
+        tr_str = input('\n1. Helsinki-NLP\n2. OpenAI\n-----> Choose translation source (1/2): ')
+        while tr_str != '1' and tr_str != '2':
+            tr_str = input('-----> Choose translation source (1/2): ')
+        tr = tr_helsinki if tr_str == '1' else tr_openai
+        print(f'Chosen translation source: {tr_str}\n')
+        
         while True:
             language = ''
             while language not in tr.available_languages:
